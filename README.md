@@ -26,14 +26,14 @@ python ../my_train_original_regression.py -vocab ${base_model} -pretrain ${base_
 
 ```
 
-###### Regularized Pair-wise Model:
+###### Regularized Pairwise Model:
 ```
 experiment=penalty_pos
 python ../train_regularized.py -vocab ${base_model} -pretrain ${base_model} -res ${res_path} -save ${save_path} -n_warmup_steps ${n_warmup_steps} -batch_size ${batch_size} -lr ${learning_rate} -experiment ${experiment} -train ${dataset}
 ```
 
 
-###### Regularized Point-wise Model:
+###### Regularized Pointwise Model:
 
 ```
 experiment=penalty_neg
