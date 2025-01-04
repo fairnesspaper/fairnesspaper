@@ -4,47 +4,46 @@ This repository includes the code and experimental details for the paper *"A Gen
 <div align="center">
   
 
-  <img src="https://github.com/genderdisen/genderdisen/blob/main/results/network_arch.png" width="500" height="300"/>
+  <img src="https://github.com/fairnesspaper/fairnesspaper/blob/main/baselines.png" width="500" height="300"/>
 </div>
-
-
-
-<div align="center">
   
-##### Figure 1. Overview of the proposed neural disentanglement architecture.
-
-
+##### Figure 1. Comparison of our proposed approach with the state-of-the-art methods on the 215-query and 1,765-query datasets based on the best `fair' pairwise ranker using the "BERT-mini" base model. This ranker is the same as the pairwise ranker reported in Tables 9 and 10. We note negative values on the left side of each figure and positive values on the right side are desirable.
 
 
 ### Train
-To train the original model (without disentanglement), you need to run [my_train_priginal.py](https://github.com/genderdisen/genderdisen/blob/main/src/my_train_original.py)
+To train the original model (without prenalty, or reward), you need to run [my_train_priginal.py](https://github.com/fairnesspaper/fairnesspaper/blob/main/src/my_train_original.py).
 with the following setup:
 
-###### Original minilm-L6 model:
+###### Original pairwise model:
 
 ```
-python my_train_original.py -vocab sentence-transformers/msmarco-MiniLM-L6-cos-v5 -pretrain sentence-transformers/msmarco-MiniLM-L6-cos-v5 -res <results_path> -save <checkpoint_save_path> -n_warmup_steps 160000 -batch_size 16 -attribute_dim 100 -optimizer adam -lr 3e-6
+python ../my_train_original.py -vocab ${base_model} -pretrain ${base_model} -res ${res_path} -save ${save_path} -n_warmup_steps 160000 -batch_size 16 -lr 3e-6 -task ranking -train ${dataset}
 ```
 
-###### Original bert-mini model:
+###### Original pointwise model:
 ```
-python my_train_original.py -vocab prajjwal1/bert-mini -pretrain prajjwal1/bert-mini -res <results_path> -save <checkpoint_save_path> -n_warmup_steps 160000 -batch_size 16 -lr 3e-6 -max_query_len 32 -max_doc_len 221
+python ../my_train_original_regression.py -vocab ${base_model} -pretrain ${base_model} -res ${res_path} -save ${save_path} -n_warmup_steps ${n_warmup_steps} -batch_size ${batch_size} -lr 3e-6 -max_doc_len 221 -max_query_len 32 -task classification -train ${dataset}
 
 ```
 
-To train the disentanglement model , you need to run [my_train_disentangled.py](https://github.com/genderdisen/genderdisen/blob/main/src/my_train_disentangled.py)
+To train the penalty models , you need to run [my_train_disentangled.py](https://github.com/genderdisen/genderdisen/blob/main/src/my_train_disentangled.py)
 with the following setup:
-###### Disentangled minilm-L6 model:
+###### Regularized Pair-wise Model:
 ```
-python my_train_disentangled.py -vocab sentence-transformers/msmarco-MiniLM-L6-cos-v5 -pretrain sentence-transformers/msmarco-MiniLM-L6-cos-v5 -res <results_path> -save <checkpoint_save_path> -n_warmup_steps 160000 -batch_size 16 -attribute_dim 50 -optimizer adam -lr 3e-4
-```
-
-###### Disentangled bert-mini model:
-
-```
-python my_train_disentangled.py -vocab prajjwal1/bert-mini -pretrain prajjwal1/bert-mini -res .<results_path> -save <checkpoint_save_path> -n_warmup_steps 160000 -batch_size 16 -attribute_dim 50 -optimizer 'adam' -lr 3e-5 -max_query_len 32 -max_doc_len 221 -alpha 1 -betta 1 -gamma 1
+experiment=penalty_pos
+python ../train_regularized.py -vocab ${base_model} -pretrain ${base_model} -res ${res_path} -save ${save_path} -n_warmup_steps ${n_warmup_steps} -batch_size ${batch_size} -lr ${learning_rate} -experiment ${experiment} -train ${dataset}
 ```
 
+
+###### Regularized Point-wise Model:
+
+```
+experiment=penalty_neg
+python ../train_regularized_regression.py -vocab ${base_model} -pretrain ${base_model} -res ${res_path} -save ${save_path} -n_warmup_steps ${n_warmup_steps} -batch_size ${batch_size} -lr ${learning_rate} -experiment ${experiment} -max_doc_len ${max_doc_len} -max_query_len ${max_query_len} -task ${task} -train ${dataset} -regularizer_neg ${regularizer_neg} -regularizer_pos ${regularizer_pos}
+
+```
+
+Experiment could be a choice of "penalty_pos" for to apply penalty to the relevant documents, "penalty_neg" to apply penalty to the irrelevant documents, or "penalty_both" to apply penalty to both relevant, and irrelevant documents. Similarly, "reward_pos", "reward_neg", and "reward_both" are the experiments for applying reward to the relevant, irrelevant, and both documents, respectively.
 
 ### inference
 
@@ -54,25 +53,6 @@ To do the inference, and rerank-the top-1000 BM25 documents, you need to run [in
 
 ```
 python inference.py -task ranking -model bert -max_input 600000000 -vocab sentence-transformers/msmarco-MiniLM-L6-cos-v5 -pretrain sentence-transformers/msmarco-MiniLM-L6-cos-v5  -checkpoint <checkpoint_save_path> -res <result_path> -max_query_len 32 -max_doc_len 221 -batch_size 256 -test queries=<test_query_path>,docs=<collection_path>,trec=<run_path>
-```
-
-###### Original bert-mini model:
-
-```
-python inference.py -task ranking -model bert -max_input 600000000 -vocab prajjwal1/bert-mini -pretrain prajjwal1/bert-mini -checkpoint ${save_path} -res ${res_path} -max_query_len 32 -max_doc_len 221 -batch_size 256 -test queries=<test_query_path>,docs=<collection_path>,trec=<run_path>
-```
-
-
-###### Disentangled minilm model:
-
-```
-python inference_disentanglement.py -task ranking -model bert -max_input 600000000 -vocab sentence-transformers/msmarco-MiniLM-L6-cos-v5 -pretrain sentence-transformers/msmarco-MiniLM-L6-cos-v5  -checkpoint <checkpoint_save_path> -res <result_path> -max_query_len 32 -max_doc_len 221 -batch_size 256 -attribute_dim 50 -test queries=<test_query_path>,docs=<collection_path>,trec=<run_path>
-```
-
-###### Disentangled bert-mini model:
-
-```
-python inference_disentanglement.py -task ranking -model bert -max_input 600000000 -vocab prajjwal1/bert-mini -pretrain prajjwal1/bert-mini -checkpoint ${save_path} -res ${res_path} -max_query_len 32 -max_doc_len 221 -batch_size 256 -attribute_dim 50 -test queries=<test_query_path>,docs=<collection_path>,trec=<run_path>
 ```
 
 The re-ranled run-files for the 215, qnd 1765 queries are provided in the [runs](https://github.com/genderdisen/genderdisen/tree/main/runs) directory.
