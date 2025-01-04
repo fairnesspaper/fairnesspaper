@@ -26,8 +26,6 @@ python ../my_train_original_regression.py -vocab ${base_model} -pretrain ${base_
 
 ```
 
-To train the penalty models , you need to run [my_train_disentangled.py](https://github.com/genderdisen/genderdisen/blob/main/src/my_train_disentangled.py)
-with the following setup:
 ###### Regularized Pair-wise Model:
 ```
 experiment=penalty_pos
@@ -47,27 +45,26 @@ Experiment could be a choice of "penalty_pos" for to apply penalty to the releva
 
 ### inference
 
-To do the inference, and rerank-the top-1000 BM25 documents, you need to run [inference.py](https://github.com/genderdisen/genderdisen/blob/main/src/inference.py), and [inference_disentanglement.py](https://github.com/genderdisen/genderdisen/blob/main/src/inference_disentanglement.py) with the following setup for the original and the disentangled models, respectively.
+To do the inference, and rerank-the top-1000 BM25 documents, you need to run [inference.py](https://github.com/fairnesspaper/fairnesspaper/blob/main/src/inference.py) with the following setup.
 
-###### Original minilm model:
 
 ```
-python inference.py -task ranking -model bert -max_input 600000000 -vocab sentence-transformers/msmarco-MiniLM-L6-cos-v5 -pretrain sentence-transformers/msmarco-MiniLM-L6-cos-v5  -checkpoint <checkpoint_save_path> -res <result_path> -max_query_len 32 -max_doc_len 221 -batch_size 256 -test queries=<test_query_path>,docs=<collection_path>,trec=<run_path>
+python ../inference.py -vocab ${base_model} -pretrain ${base_model} -max_query_len ${max_query_len} -max_doc_len ${max_doc_len} -batch_size ${batch_size} -checkpoint ${checkpoint} -res ${res_path} -task ${task} -test queries=${queries},docs=${docs},trec=${trec}
+
 ```
 
-The re-ranled run-files for the 215, qnd 1765 queries are provided in the [runs](https://github.com/genderdisen/genderdisen/tree/main/runs) directory.
 ### evaluation
 
 ###### MRR
 
-You may use [calculate_mrr.py](https://github.com/genderdisen/genderdisen/blob/main/src/calculate_mrr.py) as follows to calculate the MRR measure.
+You may use [calculate_mrr.py](https://github.com/fairnesspaper/fairnesspaper/blob/main/src/calculate_mrr.py) as follows to calculate the MRR measure.
 
 ```
 python calculate_mrr.py -qrels <qrels_path> -run <run_path>
 ```
 
 ###### ARaB
-In order to calculate the ARaB metrics, you need to first run [documents_calculate_bias.py](https://github.com/genderdisen/genderdisen/blob/main/src/documents_calculate_bias.py) to calculate bias of each of the documents in the collectio. then you need to run [runs_calculate_bias.py](https://github.com/genderdisen/genderdisen/blob/main/src/runs_calculate_bias.py), anf finally [model_calculate_bias.py](https://github.com/genderdisen/genderdisen/blob/main/src/model_calculate_bias.py).
+In order to calculate the ARaB metrics, you need to first run [documents_calculate_bias.py](https://github.com/fairnesspaper/fairnesspaper/blob/main/src/documents_calculate_bias.py) to calculate bias of each of the documents in the collectio. then you need to run [runs_calculate_bias.py](https://github.com/fairnesspaper/fairnesspaper/blob/main/src/runs_calculate_bias.py), and finally [model_calculate_bias.py](https://github.com/fairnesspaper/fairnesspaper/blob/main/src/model_calculate_bias.py).
 
 ###### NFair
 For calculating the NFaiR metric, you need to run this command as mentioned in the [NFaiRR GitHub repository](https://github.com/CPJKU/FairnessRetrievalResults/tree/main/measurement).
@@ -83,6 +80,6 @@ python metrics_fairness.py --collection-neutrality-path processed/collection_neu
 ```
 ###### LIWC
 
-To calculate the LIWC metric, you first need to get the LIWC dictionary from [their website](https://www.liwc.app) and then run [calculate_liwc_biases.py](https://github.com/genderdisen/genderdisen/blob/main/src/LIWC/calculate_liwc_biases.py).
+To calculate the LIWC metric, you first need to get the LIWC dictionary from [their website](https://www.liwc.app) and then run [calculate_liwc_biases.py](https://github.com/fairnesspaper/fairnesspaper/blob/main/src/LIWC/calculate_liwc_biases.py).
 
 
