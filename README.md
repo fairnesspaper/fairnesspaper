@@ -4,7 +4,7 @@ This repository includes the code and experimental details for the paper *"A Gen
 <div align="center">
   
 
-  <img src="https://github.com/fairnesspaper/fairnesspaper/blob/main/baselines.png" width="500" height="300"/>
+  <img src="https://github.com/fairnesspaper/fairnesspaper/blob/main/baselines1.png" width="500" height="300"/>
 </div>
   
 ##### Figure 1. Comparison of our proposed approach with the state-of-the-art methods on the 215-query and 1,765-query datasets based on the best `fair' pairwise ranker using the "BERT-mini" base model. This ranker is the same as the pairwise ranker reported in Tables 9 and 10. We note negative values on the left side of each figure and positive values on the right side are desirable.
